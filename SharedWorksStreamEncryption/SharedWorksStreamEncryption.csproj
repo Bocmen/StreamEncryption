@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreStreamEncryption\CoreStreamEncryption.csproj" />
     <ProjectReference Include="..\Submodules\ConsoleLibrary\Library\Work\WorkInvoker\WorkInvoker.csproj" />
   </ItemGroup>
 

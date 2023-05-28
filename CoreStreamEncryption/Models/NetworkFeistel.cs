@@ -64,8 +64,21 @@ namespace CoreStreamEncryption.Models
                 if (_correctInputBlock == null)
                     result = Transformation(left, right, keys, loggerIteration);
                 else
+                {
+                    var blockInput = (left << PartCountBit) | right;
+                    var correctResult = _correctInputBlock(blockInput, PositionOperation.Start);
+                    loggerIteration?.StartBlockCorrect(this, blockInput, correctResult);
                     result = Transformation(_correctInputBlock((left << PartCountBit) | right, PositionOperation.Start), keys, loggerIteration);
-                var bytesResult = _correctInputBlock == null ? result.ToByteArray() : _correctInputBlock(result, PositionOperation.End).ToByteArray();
+                }
+                byte[] bytesResult;
+                if (_correctInputBlock != null)
+                {
+                    var correctResult = _correctInputBlock(result, PositionOperation.End);
+                    loggerIteration?.EndBlockCorrect(this, result, correctResult);
+                    bytesResult = correctResult.ToByteArray();
+                }
+                else
+                    bytesResult = result.ToByteArray();
                 if (bytesResult.Length < CountBytes)
                 {
                     for (int i = CountBytes - bytesResult.Length; i > 0; i--)
