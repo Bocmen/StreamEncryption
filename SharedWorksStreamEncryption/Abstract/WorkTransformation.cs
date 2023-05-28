@@ -13,9 +13,8 @@ namespace SharedWorksStreamEncryption.Abstract
     public abstract class WorkTransformation: WorkInvoker.Abstract.WorkBase
     {
         private const string DefaultText = "12345678";
-        private readonly static Encoding Encoding = CodePagesEncodingProvider.Instance.GetEncoding(1251);
         private readonly static BigInteger[] Keys = Enumerable.Range(0, 32).Select(x => (BigInteger)x).ToArray();
-        private bool _isViewLogger;
+        private readonly bool _isViewLogger;
 
         protected WorkTransformation(bool isViewLogger = false) => _isViewLogger=isViewLogger;
 
@@ -34,11 +33,11 @@ namespace SharedWorksStreamEncryption.Abstract
                 loggerIteration = new DotLogger((v) => stringBuilder.Append(v));
             }
             IStreamTransformation streamTransformation = await CreateStreamTransformation(loggerIteration, token);
-            var result = streamTransformation.Encryption(Encoding.GetBytes(textInput), keys, loggerIteration).ToArray();
+            var result = streamTransformation.Encryption(Const.Encoding.GetBytes(textInput), keys, loggerIteration).ToArray();
             if (stringBuilder != null)
                 await Console.DrawWebViewDot(stringBuilder.ToString());
-            await Console.ReadLine("Результат шифрования", token: token, defaultValue: Encoding.GetString(result).Replace('\0', '?'));
-            await Console.ReadLine("Результат дешифрования", token: token, defaultValue: Encoding.GetString(streamTransformation.Decryption(result, keys).ToArray()));
+            await Console.ReadLine("Результат шифрования", token: token, defaultValue: Const.Encoding.GetString(result).Replace('\0', '?'));
+            await Console.ReadLine("Результат дешифрования", token: token, defaultValue: Const.Encoding.GetString(streamTransformation.Decryption(result, keys).ToArray()));
         }
     }
 }

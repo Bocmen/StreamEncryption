@@ -7,7 +7,7 @@ namespace CoreStreamEncryption.Models
 {
     public class DES : IStreamTransformation
     {
-        private IStreamTransformation _currentModelDes;
+        private readonly IStreamTransformation _currentModelDes;
 
         public int CountBytes => _currentModelDes.CountBytes;
         public int CountRound => _currentModelDes.CountRound;

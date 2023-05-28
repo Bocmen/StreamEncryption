@@ -1,6 +1,5 @@
 ﻿using ConsoleLibrary.ConsoleExtensions;
 using CoreStreamEncryption.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -14,7 +13,6 @@ namespace SharedWorksStreamEncryption
     [WorkInvoker.Attributes.LoaderWorkBase("Анализ сети Фейстеля", "Предназначена для генерации данных для последующего анализа", Const.NetworkFeistelNameGroup)]
     public class NetworkFeistelAnalyzeWork : WorkInvoker.Abstract.WorkBase
     {
-        private readonly static Encoding Encoding = CodePagesEncodingProvider.Instance.GetEncoding(1251);
         private static IEnumerable<BigInteger> ToLoopKeys(IEnumerable<BigInteger> keys)
         {
             while (true)
@@ -36,7 +34,7 @@ namespace SharedWorksStreamEncryption
                     resultOp = (resultOp << 1) | ((resultOp & currentSetting.PartMask) >> (currentSetting.PartCountBit - 1));
                     return resultOp & currentSetting.PartMask;
                 });
-                string result = Encoding.GetString(networkFeistel.Encryption(Encoding.GetBytes(inputText), ToLoopKeys(keys), null).ToArray());
+                string result = Const.Encoding.GetString(networkFeistel.Encryption(Const.Encoding.GetBytes(inputText), ToLoopKeys(keys), null).ToArray());
                 result = result.Replace('\0', '?');
                 dictonaryAnalyze.Append(result);
                 _ = Console.ReadLine($"Раунд {i + 1}", defaultValue: result, token: token);
