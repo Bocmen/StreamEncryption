@@ -11,12 +11,12 @@ namespace MSTests
         [TestMethod]
         public void TestNetworkFeistel()
         {
-            Random random = new Random();
+            Random random = new();
             int countByte = 2;
             int countRound = 8;
             int countBytesData = 1;
 
-            NetworkFeistel networkFeistel = new NetworkFeistel(countByte, countRound, (currentSetting, right, key) =>
+            NetworkFeistel networkFeistel = new(countByte, countRound, (currentSetting, right, key) =>
             {
                 var resultOp = right ^ (key & currentSetting.PartMask);
                 resultOp = (resultOp << 1) | ((resultOp & currentSetting.PartMask) >> (currentSetting.PartCountBit - 1));
@@ -35,8 +35,8 @@ namespace MSTests
         }
         public void TestDES(ModeType modeType, int countBytesData = 100)
         {
-            Random random = new Random();
-            DES des = new DES(modeType);
+            Random random = new();
+            DES des = new(modeType);
 
             for (int i = 0; i < 100; i++)
             {

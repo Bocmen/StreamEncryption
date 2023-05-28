@@ -74,27 +74,6 @@ namespace CoreStreamEncryption.Models
                                 _initVector = DESUtils.Permutations(bigInteger, positionOperation);
                                 return _initVector;
                         }
-                        break;
-                    case ModeType.CFB:
-                        switch (_currentInfoTransformation)
-                        {
-                            case ModeTransformation.Decryption:
-                                break;
-                            default:
-                                BigInteger result = DESUtils.Permutations(bigInteger, positionOperation);
-                                BigInteger resultPart = (result >> 32) & uint.MaxValue;
-                                BigInteger binPart = (_backBlock >> 32) & uint.MaxValue;
-                                BigInteger temp1 = resultPart ^ binPart;
-
-                                resultPart = result & uint.MaxValue;
-                                _initVector = (resultPart << 32) | temp1;
-
-                                binPart = _backBlock & uint.MaxValue;
-                                result = 0;// АААААААА
-
-                                break;
-                        }
-                        break;
                 }
             }
             else
@@ -110,12 +89,9 @@ namespace CoreStreamEncryption.Models
                             case ModeTransformation.Decryption:
                                 return DESUtils.Permutations(bigInteger, positionOperation);
                             default:
-                                bigInteger = bigInteger ^ _initVector;
+                                bigInteger ^= _initVector;
                                 return DESUtils.Permutations(bigInteger, positionOperation);
                         }
-                        break;
-                    case ModeType.CFB:
-                        return DESUtils.Permutations(_initVector, positionOperation);
                 }
             }
             return -1;
