@@ -1,0 +1,6 @@
+[submodule "App/Submodules/ConsoleLibrary"]
+	path = App/Submodules/ConsoleLibrary
+	url = https://github.com/Bocmen/ConsoleLibrary
+[submodule "Submodules/ConsoleLibrary"]
+	path = Submodules/ConsoleLibrary
+	url = https://github.com/Bocmen/ConsoleLibrary
