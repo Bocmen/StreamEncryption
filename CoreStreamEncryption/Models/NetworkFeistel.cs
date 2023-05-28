@@ -10,13 +10,12 @@ namespace CoreStreamEncryption.Models
     public class NetworkFeistel : IStreamTransformation
     {
         public delegate BigInteger NetworkFeistelFunction(NetworkFeistel currentSetting, BigInteger right, BigInteger key);
-        public delegate BigInteger CorrectInputBlickFunction(BigInteger block, PositionOperation positionOperation);
-        public delegate BigInteger RoundEditKey(int round, BigInteger lastKey);
+        public delegate BigInteger CorrectInputBlockFunction(BigInteger block, PositionOperation positionOperation);
 
         public readonly int CountBytes;
         public readonly int CountRound;
         private readonly NetworkFeistelFunction _function;
-        private readonly CorrectInputBlickFunction _correctInputBlock;
+        private readonly CorrectInputBlockFunction _correctInputBlock;
 
         public readonly int PartCountBit;
         public readonly BigInteger PartMask;
@@ -24,7 +23,7 @@ namespace CoreStreamEncryption.Models
         int IStreamTransformation.CountBytes => CountBytes;
         int IStreamTransformation.CountRound => CountRound;
 
-        public NetworkFeistel(int countByte, int countRound, NetworkFeistelFunction function, CorrectInputBlickFunction correctInputBlock = null)
+        public NetworkFeistel(int countByte, int countRound, NetworkFeistelFunction function, CorrectInputBlockFunction correctInputBlock = null)
         {
             CountBytes =countByte <= 0 ? throw new ArgumentException(nameof(countByte)) : countByte;
             CountRound=countRound <= 0 ? throw new ArgumentException(nameof(countRound)) : countRound;
