@@ -117,7 +117,7 @@ namespace CoreStreamEncryption.Models
                 BigInteger rightTmp = right;
                 right = (left ^ _function(this, right, keys.Current)) & PartMask;
                 left = rightTmp;
-                loggerIteration?.LoggerRountIteration(this, i, left, right, keys.Current);
+                loggerIteration?.LoggerRoundIteration(this, i, left, right, keys.Current);
             }
             var result = (right << PartCountBit) | left;
             loggerIteration?.EndTranslationBlock(this, result);

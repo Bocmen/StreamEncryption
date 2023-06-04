@@ -10,7 +10,6 @@ namespace SharedWorksStreamEncryption
     [WorkInvoker.Attributes.LoaderWorkBase("Шифрование/Дешифрование", "", Const.NetworkFeistelNameGroup)]
     public class WorksNetworkFeistel : Abstract.WorkTransformation
     {
-        public WorksNetworkFeistel(): base(true) { }
         protected override async Task<IStreamTransformation> CreateStreamTransformation(DotLogger dotLogger, CancellationToken token)
         {
             int countByte = await Console.ReadInt("Введите количество байт", token: token, defaultValue: 2);
@@ -27,25 +26,25 @@ namespace SharedWorksStreamEncryption
     }
 
     [WorkInvoker.Attributes.LoaderWorkBase("DES ECB", "Режим простой замены", Const.DESNameGroup)]
-    public class WorksDES_ECB : Abstract.WorkTransformation
+    public class WorksDES_ECB : Abstract.DESWorkTransformation
     {
         protected override Task<IStreamTransformation> CreateStreamTransformation(DotLogger dotLogger, CancellationToken token) => Task.FromResult((IStreamTransformation)new DES(DES.ModeType.ECB));
     }
 
     [WorkInvoker.Attributes.LoaderWorkBase("DES CBC", "Режим сцепления блоков шифротекста", Const.DESNameGroup)]
-    public class WorksDES_CBC : Abstract.WorkTransformation
+    public class WorksDES_CBC : Abstract.DESWorkTransformation
     {
         protected override Task<IStreamTransformation> CreateStreamTransformation(DotLogger dotLogger, CancellationToken token) => Task.FromResult((IStreamTransformation)new DES(DES.ModeType.CBC));
     }
 
     [WorkInvoker.Attributes.LoaderWorkBase("DES CFB", "Режим обратной связи по шифротексту", Const.DESNameGroup)]
-    public class WorksDES_CFB : Abstract.WorkTransformation
+    public class WorksDES_CFB : Abstract.DESWorkTransformation
     {
         protected override Task<IStreamTransformation> CreateStreamTransformation(DotLogger dotLogger, CancellationToken token) => Task.FromResult((IStreamTransformation)new DES(DES.ModeType.CFB));
     }
 
     [WorkInvoker.Attributes.LoaderWorkBase("DES OFB", "Режим обратной связи по выходу", Const.DESNameGroup)]
-    public class WorksDES_OFB : Abstract.WorkTransformation
+    public class WorksDES_OFB : Abstract.DESWorkTransformation
     {
         protected override Task<IStreamTransformation> CreateStreamTransformation(DotLogger dotLogger, CancellationToken token) => Task.FromResult((IStreamTransformation)new DES(DES.ModeType.OFB));
     }

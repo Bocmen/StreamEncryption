@@ -30,16 +30,22 @@ namespace CoreStreamEncryption.Models
         {
             throw new NotImplementedException();
         }
-
+        private IEnumerable<byte> AutoEndLoggerIteration(IEnumerable<byte> outputData, LoggerIteration loggerIteration)
+        {
+            foreach (var item in outputData)
+                yield return item;
+            loggerIteration?.EndTranslation(_networkFeistel);
+            yield break;
+        }
         public IEnumerable<byte> Encryption(IEnumerator<byte> dataBytes, IEnumerator<BigInteger> keys, LoggerIteration loggerIteration = null)
         {
             StartTranslation(false);
-            return CostumTransformation(_networkFeistel.Encryption(GetDataTransformation(), keys, loggerIteration).GetEnumerator(), dataBytes);
+            return AutoEndLoggerIteration(CostumTransformation(_networkFeistel.Encryption(GetDataTransformation(), keys, loggerIteration).GetEnumerator(), dataBytes), loggerIteration);
         }
         public IEnumerable<byte> Decryption(IEnumerator<byte> dataBytes, IEnumerator<BigInteger> keys, LoggerIteration loggerIteration = null)
         {
             StartTranslation(true);
-            return CostumTransformation(_networkFeistel.Encryption(GetDataTransformation(), keys, loggerIteration).GetEnumerator(), dataBytes);
+            return AutoEndLoggerIteration(CostumTransformation(_networkFeistel.Encryption(GetDataTransformation(), keys, loggerIteration).GetEnumerator(), dataBytes), loggerIteration);
         }
         private void StartTranslation(bool isDecryption)
         {

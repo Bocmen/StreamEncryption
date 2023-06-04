@@ -9,20 +9,24 @@ namespace SharedWorksStreamEncryption.Models
 {
     public class DotLogger : CoreStreamEncryption.Abstract.LoggerIteration
     {
-        private const string NameAttributeLabel = "label";
         private const string LabelRight = "Right";
         private const string LabelLeft = "Left";
         private const string LabelFunction = "F";
         private const string LabelRound = "Round [{0}]";
-        private const string LabelCombine = "Combine";
-        private const string LabelStartValue = "Block [{0}]";
+        private const string LabelNameSubgraphBlock = "Block [{0}]";
         private const string LabelKey = "Key";
-        private const string LabelInputBlock = "EditInputBlock";
-        private const string LabelOutputBlock = "EditOutputBlock";
+
+        private const string LabelInputBlock = "Input";
+        private const string LabelEditInputBlock = "EditTo";
+
+        private const string LabelOutputBlock = "Combine";
+        private const string LabelEditOutputBlock = LabelEditInputBlock;
 
         public delegate void Write(string data);
 
         private readonly Write _writer;
+        private readonly string _nameDefaultFunction;
+        private readonly ConnectType _connectTypeDefaultFunction;
         private long _indexator = 0;
         private long _lastIndexLeft;
         private long _lastIndexRight;
@@ -35,6 +39,13 @@ namespace SharedWorksStreamEncryption.Models
         public DotLogger(Write writer)
         {
             _writer = writer;
+        }
+
+        public DotLogger(Write writer, string nameFunction, ConnectType connectType)
+        {
+            _writer = writer;
+            _nameDefaultFunction = nameFunction;
+            _connectTypeDefaultFunction = connectType;
         }
 
         private long GetUnique() => ++_indexator;
@@ -61,58 +72,68 @@ namespace SharedWorksStreamEncryption.Models
             _indexBlock++;
             _lastIndexLeft = GetUnique();
             _lastIndexRight = GetUnique();
-
             _writer($"subgraph cluster_Block_{_indexBlock} {{");
             _writer($"subgraph clusterStartBlock_{_indexBlock} {{");
-            _writer($"{NameAttributeLabel}=\"{string.Format(LabelStartValue, _indexBlock)}\";");
-            _writer($"{GetNameLastLeft()}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelLeft, left, currentStreamTransformation.PartCountBit())}\"];");
-            _writer($"{GetNameLastRight()}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelRight, right, currentStreamTransformation.PartCountBit())}\"];");
+            _writer($"label=\"{string.Format(LabelNameSubgraphBlock, _indexBlock)}\";");
+            BigInteger inputBlock = (left << currentStreamTransformation.PartCountBit()) | right;
+            BigInteger? editInputBlock = null;
             if (originalInputBlock != null)
             {
-                string nameBlock = $"{nameof(LabelInputBlock)}_{GetUnique()}";
-                _writer($"{nameBlock}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelInputBlock, (BigInteger)originalInputBlock, currentStreamTransformation.CountBytes * 8)}\"];");
-                originalInputBlock = null;
-                _writer($"{nameBlock} -> {GetNameLastLeft()};");
-                _writer($"{nameBlock} -> {GetNameLastRight()};");
+                editInputBlock = inputBlock;
+                inputBlock = (BigInteger)originalInputBlock;
             }
+            string nameLastBlock = $"{nameof(LabelInputBlock)}_{GetUnique()}";
+            _writer($"{nameLastBlock}[shape=record, label=\"{GetContentElementOperation(LabelInputBlock, inputBlock, currentStreamTransformation.CountBytes * 8)}\"];");
+            if (originalInputBlock != null)
+            {
+                string nameBlock = $"{nameof(LabelEditInputBlock)}_{GetUnique()}";
+                _writer($"{nameBlock}[shape=record, label=\"{GetContentElementOperation(LabelEditInputBlock, (BigInteger)editInputBlock, currentStreamTransformation.CountBytes * 8)}\"];");
+                _writer($"{nameLastBlock} -> {nameBlock};");
+                nameLastBlock = nameBlock;
+                originalInputBlock = null;
+            }
+            _writer($"{GetNameLastLeft()}[shape=record, label=\"{GetContentElementOperation(LabelLeft, left, currentStreamTransformation.PartCountBit())}\"];");
+            _writer($"{GetNameLastRight()}[shape=record, label=\"{GetContentElementOperation(LabelRight, right, currentStreamTransformation.PartCountBit())}\"];");
+            _writer($"{nameLastBlock} -> {GetNameLastLeft()};");
+            _writer($"{nameLastBlock} -> {GetNameLastRight()};");
             _writer("}");
         }
 
         public override void EndTranslationBlock(IStreamTransformation currentStreamTransformation, BigInteger result)
         {
-            _writer($"subgraph cluster_RedultBlock_{_indexBlock} {{");
+            _writer($"subgraph cluster_ResultBlock_{_indexBlock} {{");
             string nameElement = $"resultBlock_{_indexBlock}";
-            _writer($"{nameElement}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelCombine, result, currentStreamTransformation.CountBytes * 8)}\"];");
+            _writer($"{nameElement}[shape=record, label=\"{GetContentElementOperation(LabelOutputBlock, result, currentStreamTransformation.CountBytes * 8)}\"];");
             _writer($"{GetNameLastRight()} -> {nameElement};");
             _writer($"{GetNameLastLeft()} -> {nameElement};");
             if (originalOutputBlock != null)
             {
                 string nameBlock = $"{nameof(LabelOutputBlock)}_{GetUnique()}";
-                _writer($"{nameBlock}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelOutputBlock, (BigInteger)originalOutputBlock, currentStreamTransformation.CountBytes * 8)}\"];");
+                _writer($"{nameBlock}[shape=record, label=\"{GetContentElementOperation(LabelEditOutputBlock, (BigInteger)originalOutputBlock, currentStreamTransformation.CountBytes * 8)}\"];");
                 originalOutputBlock = null;
                 _writer($"{nameElement} -> {nameBlock};");
             }
             _writer("}}");
         }
         private string GetNameOperation(int indexOparation, int round) => $"F_Op_{_indexBlock}_{round}_{indexOparation}";
-        public override void LoggerRountIteration(IStreamTransformation currentStreamTransformation, int indexRound, BigInteger left, BigInteger right, BigInteger key)
+        public override void LoggerRoundIteration(IStreamTransformation currentStreamTransformation, int indexRound, BigInteger left, BigInteger right, BigInteger key)
         {
             string oldNameLeft = GetNameLastLeft();
             _lastIndexLeft = GetUnique();
             _indexKey = GetUnique();
 
             _writer($"subgraph clusterRound_{_indexBlock}_{indexRound} {{");
-            _writer($"{NameAttributeLabel} = \"{string.Format(LabelRound, indexRound + 1)}\";");
-            _writer($"{GetNameLastKey()}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelKey, key, currentStreamTransformation.PartCountBit())}\"];");
+            _writer($"label=\"{string.Format(LabelRound, indexRound + 1)}\";");
+            _writer($"{GetNameLastKey()}[shape=record, label=\"{GetContentElementOperation(LabelKey, key, currentStreamTransformation.PartCountBit())}\"];");
             string rightName = GetNameLastRight();
             if (_functionOperations.Any())
             {
                 _writer($"subgraph clusterF_{GetUnique()} {{");
-                _writer($"{NameAttributeLabel} = \"{LabelFunction}\";");
+                _writer($"label=\"{LabelFunction}\";");
                 int indexOperation = 0;
                 string currentNameOperation = string.Empty;
                 foreach (var operation in _functionOperations)
-                    _writer($"{GetNameOperation(indexOperation++, indexRound)}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(operation.Name, operation.Result, operation.CountBit)}\"];");
+                    _writer($"{GetNameOperation(indexOperation++, indexRound)}[shape=record, label=\"{GetContentElementOperation(operation.Name, operation.Result, operation.CountBit)}\"];");
                 _writer("}");
                 indexOperation = 0;
                 foreach (var operation in _functionOperations)
@@ -123,17 +144,27 @@ namespace SharedWorksStreamEncryption.Models
                         foreach (var connectTo in operation.ConnectToOperations)
                             _writer($"{GetNameOperation(connectTo, indexRound)} -> {currentNameOperation};");
                     }
-                    if (operation.ConnectType.HasFlag(ConnectType.Right)) _writer($"{GetNameLastRight()} -> {currentNameOperation};");
-                    if (operation.ConnectType.HasFlag(ConnectType.Left)) _writer($"{GetNameLastLeft()} -> {currentNameOperation};");
-                    if (operation.ConnectType.HasFlag(ConnectType.Key)) _writer($"{GetNameLastKey()} -> {currentNameOperation};");
+                    LoggFunctionConnect(operation.ConnectType, currentNameOperation);
                 }
                 rightName = currentNameOperation;
             }
+            else if(_nameDefaultFunction != null)
+            {
+                rightName = GetNameOperation(0, indexRound);
+                _writer($"{rightName}[shape=record, label=\"{_nameDefaultFunction}\"]");
+                LoggFunctionConnect(_connectTypeDefaultFunction, rightName);
+            }
+            void LoggFunctionConnect(ConnectType connectType, string connectTo)
+            {
+                if (connectType.HasFlag(ConnectType.Right)) _writer($"{GetNameLastRight()} -> {connectTo};");
+                if (connectType.HasFlag(ConnectType.Left)) _writer($"{GetNameLastLeft()} -> {connectTo};");
+                if (connectType.HasFlag(ConnectType.Key)) _writer($"{GetNameLastKey()} -> {connectTo};");
+            }
             _functionOperations.Clear();
-            _writer($"{GetNameLastLeft()}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelLeft, left, currentStreamTransformation.PartCountBit())}\"];");
+            _writer($"{GetNameLastLeft()}[shape=record, label=\"{GetContentElementOperation(LabelLeft, left, currentStreamTransformation.PartCountBit())}\"];");
             _writer($"{GetNameLastRight()} -> {GetNameLastLeft()};");
             _lastIndexRight = GetUnique();
-            _writer($"{GetNameLastRight()}[shape=record, {NameAttributeLabel}=\"{GetContentElementOperation(LabelRight, right, currentStreamTransformation.PartCountBit())}\"];");
+            _writer($"{GetNameLastRight()}[shape=record, label=\"{GetContentElementOperation(LabelRight, right, currentStreamTransformation.PartCountBit())}\"];");
             _writer($"{rightName} -> {GetNameLastRight()};");
             _writer($"{oldNameLeft} -> {GetNameLastRight()};");
             _writer("}");
