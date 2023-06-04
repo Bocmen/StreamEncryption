@@ -116,7 +116,7 @@ namespace SharedWorksStreamEncryption.Models
             _writer("}}");
         }
         private string GetNameOperation(int indexOparation, int round) => $"F_Op_{_indexBlock}_{round}_{indexOparation}";
-        public override void LoggerRoundIteration(IStreamTransformation currentStreamTransformation, int indexRound, BigInteger left, BigInteger right, BigInteger key)
+        public override void LoggerRoundIteration(IStreamTransformation currentStreamTransformation, int indexRound, BigInteger left, BigInteger right, BigInteger fResult, BigInteger key)
         {
             string oldNameLeft = GetNameLastLeft();
             _lastIndexLeft = GetUnique();
@@ -151,7 +151,7 @@ namespace SharedWorksStreamEncryption.Models
             else if(_nameDefaultFunction != null)
             {
                 rightName = GetNameOperation(0, indexRound);
-                _writer($"{rightName}[shape=record, label=\"{_nameDefaultFunction}\"]");
+                _writer($"{rightName}[shape=record, label=\"{GetContentElementOperation(_nameDefaultFunction, fResult, currentStreamTransformation.PartCountBit())}\"];");
                 LoggFunctionConnect(_connectTypeDefaultFunction, rightName);
             }
             void LoggFunctionConnect(ConnectType connectType, string connectTo)

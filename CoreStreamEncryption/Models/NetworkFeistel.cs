@@ -115,9 +115,10 @@ namespace CoreStreamEncryption.Models
             {
                 if (!keys.MoveNext()) throw new ArgumentOutOfRangeException(nameof(keys));
                 BigInteger rightTmp = right;
-                right = (left ^ _function(this, right, keys.Current)) & PartMask;
+                BigInteger fResult = _function(this, right, keys.Current);
+                right = (left ^ fResult) & PartMask;
                 left = rightTmp;
-                loggerIteration?.LoggerRoundIteration(this, i, left, right, keys.Current);
+                loggerIteration?.LoggerRoundIteration(this, i, left, right, fResult, keys.Current);
             }
             var result = (right << PartCountBit) | left;
             loggerIteration?.EndTranslationBlock(this, result);
