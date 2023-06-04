@@ -34,7 +34,7 @@ namespace SharedWorksStreamEncryption.Abstract
             }
             IStreamTransformation streamTransformation = await CreateStreamTransformation(loggerIteration, token);
             var result = streamTransformation.Encryption(Const.Encoding.GetBytes(textInput), keys, loggerIteration).ToArray();
-            string dotContent = stringBuilder.ToString();
+            string dotContent = stringBuilder?.ToString();
             if (isViewLogger)
                 await Console.DrawWebViewDot(dotContent);
             if(isEchoDotLoggerData)
