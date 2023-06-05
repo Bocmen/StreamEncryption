@@ -130,6 +130,22 @@ namespace CoreStreamEncryption.Models
 
         private IEnumerator<BigInteger> EncryptionGetKeys(IEnumerator<BigInteger> keys)
         {
+            bool isBuffered = false;
+            try
+            {
+                keys.Reset();
+            }
+            catch { isBuffered = true; }
+            if (isBuffered)
+            {
+                List<BigInteger> keysBuff = new List<BigInteger>();
+                while (keys.MoveNext())
+                {
+                    yield return keys.Current;
+                    keysBuff.Add(keys.Current);
+                }
+                keys = keysBuff.GetEnumerator();
+            }
             while (true)
             {
                 if (!keys.MoveNext())

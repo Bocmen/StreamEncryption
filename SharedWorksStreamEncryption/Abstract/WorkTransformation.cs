@@ -21,6 +21,7 @@ namespace SharedWorksStreamEncryption.Abstract
         public override async Task Start(CancellationToken token)
         {
             string textInput = await Console.ReadLine("Введите текст для шифрования", token: token, defaultValue: DefaultText);
+            await Console.WriteLine($"Внимание проверьте чтобы длина байтовой последовательности была корректна, у текущего текста длина: {Const.Encoding.GetByteCount(textInput)}");
             BigInteger[] keys = await Console.ReadArrayBigInteger("Введите ключи", token: token, defaultsValue: Keys);
 
             DotLogger loggerIteration = null;
